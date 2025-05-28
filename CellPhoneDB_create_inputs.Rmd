@@ -1,0 +1,59 @@
+---
+title: "CellPhoneDB, create data input"
+output: pdf_document
+date: "2025-04-09"
+---
+
+```{r include = FALSE}
+library(Seurat)
+library(SeuratObject)
+library(SeuratDisk)
+library(hdf5r)
+library(Matrix)
+```
+
+```{r load the data}
+seurat_all <- readRDS("newestConfCI_dims15_withCellIDs_260325.rds")
+Idents(seurat_all) = seurat_all$CellType.CI
+```
+For min number of cells >100 and SCT assay
+```{r subset cds}
+seurat_core_100 = subset(seurat_all, subset = CellType.CI %in% c("BVC_Core","GBM_Core","Myeloid_Core","Oligo_Core"))
+seurat_edge_100 = subset(seurat_all, subset = CellType.CI %in% c("abn-neuron_Edge","Astrocyte_Edge","BVC_Edge","Ex-neuron_Edge","GBM_Edge","In-neuron_Edge","Myeloid_Edge","OL-MG_Edge","Oligo_Edge","OPC_Edge","T-cell_Edge"))
+```
+
+For core >100
+```{r write gene expression in mtx format, updated core data, 100}
+writeMM(seurat_core_100@assays$SCT@data, file = "GBM_mtx_core_100/matrix.mtx") 
+write(x = rownames(seurat_core_100@assays$SCT@data), file = "GBM_mtx_core_100/features.tsv")
+
+write(x = colnames(seurat_core_100@assays$SCT@data), file = "GBM_mtx_core_100/barcodes.tsv")
+```
+
+```{r generate metadata, updated core data, 100}
+seurat_core_100@meta.data$Cell = rownames(seurat_core_100@meta.data)
+meta_core = seurat_core_100@meta.data[,c('Cell','CellType.CI')]
+write.table(meta_core, file = 'GBM_meta_core_100.tsv', sep = '\t', quote = F, row.names = F)
+```
+
+For edge 100
+```{r write gene expression in mtx format, updated edge data, 100}
+writeMM(seurat_edge_100@assays$SCT@data, file = "GBM_mtx_edge_100/matrix.mtx")
+write(x = rownames(seurat_edge_100@assays$SCT@data), file = "GBM_mtx_edge_100/features.tsv")
+
+write(x = colnames(seurat_edge_100@assays$SCT@data), file = "GBM_mtx_edge_100/barcodes.tsv")
+```
+
+```{r generate metadata}
+seurat_edge_100@meta.data$Cell = rownames(seurat_edge_100@meta.data)
+meta_edge = seurat_edge_100@meta.data[,c('Cell','CellType.CI')]
+write.table(meta_edge, file = 'GBM_meta_edge_100.tsv', sep = '\t', quote = F, row.names = F)
+```
+
+```{r convert to anndata}
+SaveH5Seurat(seurat_all, filename = "seurat_all.h5Seurat")
+Convert("seurat_all.h5Seurat", dest = "h5ad")
+```
+
+
+
