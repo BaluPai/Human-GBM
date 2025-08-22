@@ -30,7 +30,7 @@ set.seed(1)
 DefaultAssay(Obj) <- "SCT"
 
 #Loop "num.loop" times of differential analysis for sub-sampled obj
-num.loop <- 100
+num.loop <- 100 # modify as required
 
 #Create an empty object to store the FindMarkers results
 pv.mtx1 <- NULL
